@@ -1,5 +1,10 @@
-python-telegram-bot==20.8
-solana==0.35.0
-solders==0.21.0
 python-dotenv
 flask
+requests
+python-telegram-bot==21.10
+web3
+asyncpg
+aiohttp
+gunicorn
+solana
+solders

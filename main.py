@@ -6,107 +6,139 @@ import requests
 from flask import Flask
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, CallbackQueryHandler
-from dotenv import load_dotenv
 
-load_dotenv()
-
-# --- CONFIG ---
+# --- CONFIGURATION (Load from Env) ---
 BOT_TOKEN = os.getenv("BOT_BOT")
+SOL_MAIN = os.getenv("SOL_MAIN") # Your Wallet
+VIP_CHANNEL_ID = os.getenv("VIP_CHANNEL_ID") # e.g. -1002384609234
 ADMIN_ID = os.getenv("ADMIN_ID")
-SOL_MAIN = os.getenv("SOL_MAIN")
-VIP_CHANNEL_ID = os.getenv("VIP_CHANNEL_ID")
-HELIUS_RPC = os.getenv("HELIUS_RPC")
 
-# --- FLASK SERVER (For Render Health Check) ---
+# --- FLASK WEB SERVER (Health Check for Render) ---
 flask_app = Flask(__name__)
 @flask_app.route('/')
-def health(): return "ICEGODS HUNTER ENGINE ONLINE 🟢", 200
+def health(): return "BOOST LEGENDS CORE ONLINE 🟢", 200
 
 def run_web():
-    # This is the function Render looks for to keep the bot alive
     port = int(os.environ.get("PORT", 8080))
     flask_app.run(host="0.0.0.0", port=port)
 
-# --- HUNTER ENGINE (Automated Alpha Alerts) ---
-async def post_whale_alerts(context: ContextTypes.DEFAULT_TYPE):
-    """This function posts 100x Gem alerts to your channel automatically"""
-    tokens = ["$ICE", "$SOL", "$WIF", "$JUP", "$BONK", "$POPCAT", "$PENGU"]
-    token = random.choice(tokens)
-    amount = random.randint(45, 650)
+# --- 🟢 REVENUE FEATURE 1: AUTOMATED BUY ALERTS ---
+# This makes the channel look institutional and high-volume
+async def post_buy_alerts(context: ContextTypes.DEFAULT_TYPE):
+    tokens = [
+        {"name": "Club Penguin", "sym": "CPENG", "mc": "$1,084,104"},
+        {"name": "Eva Everywhere", "sym": "EVA", "mc": "$2,076,345"},
+        {"name": "Cummingtonite", "sym": "CUM", "mc": "$3,154,662"},
+        {"name": "Copper Inu", "sym": "COPPERINU", "mc": "$6,559,197"}
+    ]
+    t = random.choice(tokens)
+    sol_amt = round(random.uniform(0.8, 12.5), 3)
+    usdc_amt = round(sol_amt * 108, 2) # Calculated on current SOL price
+    circles = "🟢" * random.randint(8, 25)
 
     msg = (
-        f"🚨 **WHALE BUY DETECTED** 🐋\n\n"
-        f"💰 **Amount:** {amount} SOL\n"
-        f"🪙 **Token:** `[HIDDEN - UNLOCK IN BOT]`\n"
-        f"🛡️ **Safety Score:** {random.randint(90, 99)}%\n\n"
-        f"🔥 **Unlock the Alpha here:**\n"
-        f"👉 @{context.bot.username}\n"
-        f"👉 @{context.bot.username}"
+        f"⏺ | {t['name']} / {t['sym']}\n"
+        f"{circles}\n\n"
+        f"🔀 ${usdc_amt:,} ({sol_amt} SOL)\n"
+        f"👤 Buyer / [TX](https://solscan.io)\n"
+        f"🪙 Position +{random.randint(15, 450)}%\n"
+        f"💸 Market Cap {t['mc']}\n\n"
+        f"DexT | Screener | [Buy](https://t.me/{context.bot.username}) | [Trending](https://t.me/{context.bot.username})"
     )
-
     try:
-        # Posts to your VIP/Public channel
-        await context.bot.send_message(chat_id=VIP_CHANNEL_ID, text=msg, parse_mode="Markdown")
-        print(f"✅ Alert posted for {token}")
+        await context.bot.send_message(chat_id=VIP_CHANNEL_ID, text=msg, parse_mode="Markdown", disable_web_page_preview=True)
     except Exception as e:
-        print(f"❌ Alert Error: {e}")
+        print(f"Alert Error: {e}")
 
-# --- BOT HANDLERS ---
+# --- 🚀 REVENUE FEATURE 2: SERVICE ADS (High Ticket) ---
+async def post_service_ads(context: ContextTypes.DEFAULT_TYPE):
+    ad_type = random.choice(["trending", "volume"])
+
+    if ad_type == "trending":
+        msg = (
+            "🔥 **BOOST LEGENDS Dexscreener Trending Service**\n"
+            "Push your token to top #10 trending!\n\n"
+            "📊 **What You Get**\n"
+            "✨ Token pushed to top #10 trending\n"
+            "👀 Maximum visibility to thousands of active traders\n"
+            "📈 Increased organic discovery\n"
+            "💰 **Price:** 1200 - 1700 USDT/USDC\n\n"
+            "━━━━━━━━━━━━━━━\n"
+            "👇 Click below to start Trending Order:"
+        )
+    else:
+        msg = (
+            "🚀 **BOOST LEGENDS Volume Booster**\n"
+            "Boost your token's volume smartly!\n\n"
+            "💡 **Why Choose Us?**\n"
+            "🏆 Cheapest on the market\n"
+            "📉 Chart-safe, no pump/dump\n"
+            "🧠 AI-powered adaptive behavior\n\n"
+            "━━━━━━━━━━━━━━━\n"
+            "👇 Click below to setup Volume Bot:"
+        )
+
+    kb = [[InlineKeyboardButton("💳 OPEN ORDER TERMINAL", url=f"https://t.me/{context.bot.username}")]]
+    try:
+        await context.bot.send_message(chat_id=VIP_CHANNEL_ID, text=msg, reply_markup=InlineKeyboardMarkup(kb), parse_mode="Markdown")
+    except Exception as e:
+        print(f"Ad Error: {e}")
+
+# --- 🤖 REVENUE FEATURE 3: THE ORDER TERMINAL ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    username = update.effective_user.username or "Warrior"
     text = (
-        f"❄️ **ICEGODS INTELLIGENCE TERMINAL** ❄️\n\n"
-        f"👤 **User:** @{username}\n"
-        f"💎 **VIP Status:** LOCKED 🔒\n\n"
-        "To unlock the token address and AI safety audit for our latest whale alerts, you must:\n\n"
-        "1️⃣ Invite 3 friends using your link\n"
-        "2️⃣ Or pay **0.5 SOL** for Lifetime Access."
+        "❄️ **ICEGODS INSTITUTIONAL TERMINAL** ❄️\n\n"
+        "Welcome to the high-frequency revenue hub. Select a service to begin deployment:\n\n"
+        "1️⃣ **Trending Service** ($1200 - $1700)\n"
+        "2️⃣ **Volume Booster** (1 SOL+)\n"
+        "3️⃣ **Whale Alpha Access** (0.5 SOL)"
     )
-    kb = [[InlineKeyboardButton("📤 Get My Referral Link", callback_data="get_link")],
-          [InlineKeyboardButton("⚡ Instant Unlock (0.5 SOL)", callback_data="pay_instant")]]
+    kb = [
+        [InlineKeyboardButton("🔥 ORDER TRENDING", callback_data="order_trending")],
+        [InlineKeyboardButton("📈 SETUP VOLUME BOT", callback_data="order_volume")],
+        [InlineKeyboardButton("💎 PREMIUM ALPHA ACCESS", callback_data="order_alpha")]
+    ]
     await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb), parse_mode="Markdown")
 
-async def verify(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if not context.args: return await update.message.reply_text("❌ Usage: `/verify <TX_ID>`")
-    tx_id = context.args[0]
-    await update.message.reply_text("📡 **Scanning Solana Blockchain...**")
-
-    # Real Helius Verification logic
-    payload = {"jsonrpc": "2.0", "id": 1, "method": "getTransaction", "params": [tx_id, {"encoding": "json", "maxSupportedTransactionVersion": 0}]}
-    try:
-        res = requests.post(HELIUS_RPC, json=payload).json()
-        if res.get("result"):
-            await update.message.reply_text("✅ **VERIFIED.** Welcome to the Inner Circle.")
-        else:
-            await update.message.reply_text("❌ TX not found. Try again in 60 seconds.")
-    except:
-        await update.message.reply_text("⚠️ Connection error. Try again.")
-
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query; await query.answer()
-    if query.data == "get_link":
-        link = f"https://t.me/{context.bot.username}?start={query.from_user.id}"
-        await query.message.reply_text(f"📤 **Your Link:**\n`{link}`")
-    elif query.data == "pay_instant":
-        await query.message.reply_text(f"💳 Send **0.5 SOL** to:\n`{SOL_MAIN}`\n\nReply: `/verify <TX_ID>`")
+    query = update.callback_query
+    await query.answer()
 
-# --- MAIN ---
+    if query.data == "order_trending":
+        await query.message.reply_text(
+            "📉 **TRENDING PROTOCOL**\n\n"
+            "Please send **1200 USDT/USDC** to:\n"
+            f"`{SOL_MAIN}`\n\n"
+            "After payment, send your Token CA and wait for Admin confirmation.",
+            parse_mode="Markdown"
+        )
+    elif query.data == "order_alpha":
+        await query.message.reply_text(
+            "💎 **ALPHA ACCESS PROTOCOL**\n\n"
+            "Send **0.5 SOL** to:\n"
+            f"`{SOL_MAIN}`\n\n"
+            "Reply with `/verify <TX_ID>` to unlock the VIP channel.",
+            parse_mode="Markdown"
+        )
+
+# --- EXECUTION ENGINE ---
 if __name__ == "__main__":
-    # 1. Start Flask
+    # 1. Start Web Server
     threading.Thread(target=run_web, daemon=True).start()
 
-    # 2. Build App
+    # 2. Build Application
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
     # 3. Add Handlers
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("verify", verify))
     app.add_handler(CallbackQueryHandler(button_handler))
 
-    # 4. START THE HUNTER ALERTS
-    # This will post an alert every 20 minutes (1200 seconds)
+    # 4. START REVENUE AUTOMATION
     if app.job_queue:
-        app.job_queue.run_repeating(post_whale_alerts, interval=1200, first=10)
+        # Post a Buy Alert every 8 minutes
+        app.job_queue.run_repeating(post_buy_alerts, interval=480, first=10)
+        # Post a Service Ad every 35 minutes
+        app.job_queue.run_repeating(post_service_ads, interval=2100, first=30)
 
-    print("🚀 ICEGODS HUNTER ENGINE ACTIVE")
+    print("🚀 ICEGODS REVENUE WEAPON ACTIVE")
     app.run_polling(drop_pending_updates=True)
